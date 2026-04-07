@@ -1,0 +1,636 @@
+{
+  "name": "Add, update, and fetch contacts from a Notion database using n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Add, Update and Fetch Contacts from Notion",
+        "height": 144,
+        "width": 476
+      },
+      "id": "8bf0f943-4b0a-4ec7-b317-234c813c8f02",
+      "name": "Sticky Note — Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        208
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Create branch\nChecks if email already exists before creating.\nBlocks duplicates automatically.",
+        "height": 356,
+        "width": 716,
+        "color": 7
+      },
+      "id": "dd471c18-5202-4074-ac2a-0f91711ea88e",
+      "name": "Sticky Note — Create",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Update branch\nFinds contact by email automatically.\nNo manual page ID needed.",
+        "height": 340,
+        "width": 716,
+        "color": 7
+      },
+      "id": "fa4418a3-bddf-4104-bfa7-c214f1147202",
+      "name": "Sticky Note — Update",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Get branch\nRetrieves a contact by email.\nReturns all Notion page properties.",
+        "height": 276,
+        "width": 364,
+        "color": 7
+      },
+      "id": "27c9c11f-527b-4437-8656-05cb44b62de3",
+      "name": "Sticky Note — Get",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        752
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "c71ad590-1ded-4247-9b5a-0d1e0f694084",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -496,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "cachedResultName": "Your Notion database name"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "939f108a-6ab7-4012-9179-c2492233800f",
+      "name": "Search — Email Exists?",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        64,
+        144
+      ],
+      "typeVersion": 2,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "fdda1e6b-cbf3-4c51-858c-a6fe4c9253df",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "leftValue": "={{ $json.id }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "393cf0d2-6088-4cc7-aaeb-24221876f5e1",
+      "name": "Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        288,
+        144
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"Contact with this email already exists. Use action: update instead.\" }",
+        "options": {}
+      },
+      "id": "d3b31e56-3343-4231-b186-b8c48335f7a1",
+      "name": "Block Duplicate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        496,
+        64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "cachedResultName": "Your Notion database name"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6119769c-6092-42fb-9e71-e61219d746c0",
+      "name": "Search — Find by Email",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        80,
+        560
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "leftValue": "={{ $json.id }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "44a303b6-2756-4afc-a5d0-259e7c5ec180",
+      "name": "Person Found?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        304,
+        560
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"No contact found with that email. Use action: create instead.\" }",
+        "options": {}
+      },
+      "id": "86a5df96-c65a-48d6-96ef-92942c055df5",
+      "name": "Not Found Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        512,
+        592
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "99de4ab0-d1db-4c06-b913-ee466b86424d",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        896,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 1,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "f1193635-4010-4f17-96d7-d60c4a0c5db1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "create"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 1,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "62f69db7-f81e-4575-b6c6-71db7578f7ff",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "update"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 1,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "ce5d0edb-5cff-4e21-8e82-0161acca5ee9",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "get"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "937d561f-ab8f-406c-814c-0b0364375911",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -272,
+        544
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "cachedResultName": "Your Notion database name"
+        },
+        "title": "={{ $('Switch1').item.json.name }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $('Switch1').item.json.email }}"
+            },
+            {
+              "key": "Phone|phone_number",
+              "phoneValue": "={{ $('Switch1').item.json.phone }}"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "={{ $('Switch1').item.json.status }}"
+            },
+            {
+              "key": "Notes|rich_text",
+              "textContent": "={{ $('Switch1').item.json.notes }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "df5320c6-dd20-49e7-96c6-51e2bbcb6a08",
+      "name": "Notion — Create Person1",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        496,
+        208
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Name|title",
+              "type": "title",
+              "title": "={{ $('Manual Trigger').item.json.name }}"
+            },
+            {
+              "key": "Email|email",
+              "type": "email",
+              "emailValue": "={{ $('Manual Trigger').item.json.email }}"
+            },
+            {
+              "key": "Phone|phone_number",
+              "type": "phone_number",
+              "phoneValue": "={{ $('Manual Trigger').item.json.phone }}"
+            },
+            {
+              "key": "Status|select",
+              "type": "select",
+              "selectValue": "={{ $('Manual Trigger').item.json.status }}"
+            },
+            {
+              "key": "Notes|rich_text",
+              "type": "rich_text",
+              "textContent": "={{ $('Manual Trigger').item.json.notes }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "19fd4939-7c05-4744-823d-c444bd3580de",
+      "name": "Notion — Update Person1",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        512,
+        416
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "cachedResultName": "Your Notion database name"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1b0a7ba0-db7e-473b-ab3c-1df43dfe6f08",
+      "name": "Notion — Get Person1",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        304,
+        864
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Router\nRoutes `create`, `update`, and `get`\nto their respective branches.",
+        "height": 338,
+        "width": 160,
+        "color": 7
+      },
+      "id": "f92b35e8-6643-423b-9b32-3b0a36370900",
+      "name": "Sticky Note — Switch",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        400
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {
+    "Manual Trigger": [
+      {
+        "json": {
+          "name": "Jane Doe",
+          "email": "jane.doe@example.com",
+          "notes": "Met at Berlin conference",
+          "phone": "+49 123 456 789",
+          "action": "create",
+          "status": "Lead"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Search — Email Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search — Find by Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion — Get Person1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Person Found?": {
+      "main": [
+        [
+          {
+            "node": "Notion — Update Person1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Found Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Exists?": {
+      "main": [
+        [
+          {
+            "node": "Block Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion — Create Person1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Get Person1": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search — Email Exists?": {
+      "main": [
+        [
+          {
+            "node": "Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search — Find by Email": {
+      "main": [
+        [
+          {
+            "node": "Person Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Create Person1": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Update Person1": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a0ce6607-8bb8-41f9-9748-f6e3fa0b2ee5",
+  "meta": {
+    "instanceId": "c97b2d5c6888318b59160b6e7fbe2ceaaa378fa4855aaa7dc838aef7bd125a6f"
+  },
+  "id": "LUQD9pcaHTpL_8XgssLiS",
+  "tags": [
+    {
+      "name": "Notion",
+      "id": "2A4dytztpoAAryaw",
+      "updatedAt": "2026-04-07T12:14:51.760Z",
+      "createdAt": "2026-04-07T12:14:51.760Z"
+    },
+    {
+      "name": "CRM",
+      "id": "3EXL6ROwSfrDNTRy",
+      "updatedAt": "2026-04-07T12:14:51.763Z",
+      "createdAt": "2026-04-07T12:14:51.763Z"
+    }
+  ]
+}
